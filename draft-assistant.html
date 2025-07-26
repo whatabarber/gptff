@@ -44,6 +44,32 @@
     <!-- [Your full original layout would go here, preserved] -->
   </div>
   <script>
+    // Check for synced ESPN picks
+function syncFromExtension() {
+  try {
+    const espnDrafted = JSON.parse(localStorage.getItem('draftedPlayers')) || [];
+
+    // Push to draftedPlayers array if not already included
+    espnDrafted.forEach(name => {
+      if (!draftedPlayers.includes(name)) {
+        const match = players.find(p => p.name === name);
+        if (match) {
+          draftedPlayers.push(name);
+          myTeam.push(match);
+        }
+      }
+    });
+
+    updateStats();
+    renderPlayers();
+  } catch (err) {
+    console.error("Sync error:", err);
+  }
+}
+
+// Run sync every 5 seconds
+setInterval(syncFromExtension, 5000);
+
     function suggestBestPick() {
       const undrafted = players.filter(p => !draftedPlayers.includes(p.name));
       const sorted = undrafted.sort((a, b) => b.projPoints - a.projPoints);
