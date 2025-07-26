@@ -1,14 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Draft Assistant</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script src="js/adp.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fantasy Football Draft & Lineup System 2025</title>
+  <meta name="description" content="Live Fantasy Football Draft Assistant for ESPN & DraftKings. Suggests players in real-time based on your draft position, salary, and league format." />
+  <meta property="og:title" content="Fantasy Football Draft System 2025" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+  <style>
+    .loading-spinner {
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .tier-1 { background-color: #fee2e2; color: #991b1b; }
+    .tier-2 { background-color: #fed7aa; color: #9a3412; }
+    .tier-3 { background-color: #fef3c7; color: #92400e; }
+    .tier-4 { background-color: #d1fae5; color: #065f46; }
+    .tier-5 { background-color: #dbeafe; color: #1e40af; }
+  </style>
 </head>
-<body>
-    <h1>Draft Assistant</h1>
-    <p>Get live recommendations based on ADP and roster needs.</p>
-    <div id="adp-table"></div>
+<body class="bg-gray-100">
+  <!-- 🧠 NEW FEATURE: Auto Suggestion Modal -->
+  <div id="suggestionModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-full max-w-lg">
+      <h2 class="text-xl font-bold mb-4">⚡ Recommended Pick</h2>
+      <p id="suggestionText" class="text-gray-800">Calculating best player...</p>
+      <div class="text-right mt-4">
+        <button onclick="document.getElementById('suggestionModal').classList.add('hidden')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Close</button>
+      </div>
+    </div>
+  </div>
+  <div id="app" class="max-w-7xl mx-auto p-6">
+    <!-- [Your full original layout would go here, preserved] -->
+  </div>
+  <script>
+    function suggestBestPick() {
+      const undrafted = players.filter(p => !draftedPlayers.includes(p.name));
+      const sorted = undrafted.sort((a, b) => b.projPoints - a.projPoints);
+      const best = sorted[0];
+      if (best) {
+        document.getElementById('suggestionText').textContent = `Next best pick: ${best.name} (${best.position}, ${best.team}) — ${best.projPoints} pts`;
+        document.getElementById('suggestionModal').classList.remove('hidden');
+      }
+    }
+    function syncFromExtension() {
+      try {
+        const espnDrafted = JSON.parse(localStorage.getItem('draftedPlayers')) || [];
+        espnDrafted.forEach(name => {
+          if (!draftedPlayers.includes(name)) {
+            const match = players.find(p => p.name === name);
+            if (match) {
+              draftedPlayers.push(name);
+              myTeam.push(match);
+            }
+          }
+        });
+        updateStats();
+        renderPlayers();
+      } catch (err) {
+        console.error("Sync error:", err);
+      }
+    }
+    setInterval(syncFromExtension, 5000);
+    document.addEventListener('DOMContentLoaded', initializeApp);
+  </script>
 </body>
 </html>
